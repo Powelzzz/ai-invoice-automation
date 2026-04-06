@@ -11,7 +11,7 @@ After import, replace the placeholder values for:
 - Google Drive folder ID
 - Google Sheet ID and sheet tab name
 - `OCR.Space` API key
-- OpenAI API key
+- OpenRouter API key
 - Gmail recipient email
 - Google node credentials
 
@@ -25,7 +25,7 @@ Convert incoming invoice files into structured records and notify stakeholders w
 2. Download File
 3. OCR.Space Request
 4. Normalize OCR Text
-5. OpenAI Extraction
+5. OpenRouter Extraction
 6. Validate JSON
 7. Append to Google Sheets
 8. Send Gmail Notification

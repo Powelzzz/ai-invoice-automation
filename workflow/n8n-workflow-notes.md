@@ -38,18 +38,18 @@ This workflow is named **AI Invoice Processing and Accounting Entry Automation**
 - Type: Code (JavaScript, runs once per item)
 - Reads `ParsedResults[0].ParsedText` from the OCR response
 - Re-attaches trigger metadata: `source_file_id`, `source_file_name`, `source_file_mime_type`, `source_file_created_time`, `source_file_link`
-- Output field: `ocr_text` — used by the OpenAI prompt
+- Output field: `ocr_text` — used by the OpenRouter prompt
 - **Assumption**: OCR always returns at least one `ParsedResults` entry. Empty text is passed downstream and caught by validation.
 
-### 5. OpenAI Extract Fields
+### 5. OpenRouter Extract Fields
 
 - Type: HTTP Request (POST)
-- Endpoint: `https://api.openai.com/v1/chat/completions`
-- Model: `gpt-4.1-mini` (balance of cost and quality; swap to `gpt-4o` for higher accuracy)
+- Endpoint: `https://api.openrouter.com/v1/chat/completions`
+- Model: `openai/gpt-4.1-mini` (balance of cost and quality; swap to `openai/gpt-4o` for higher accuracy)
 - `response_format`: `{ "type": "json_object" }` forces JSON-only output
 - Temperature: default (0.0 is ideal for structured extraction; set via model config if needed)
 - Prompt: inlined from `prompts/invoice_extraction_prompt.txt`
-- **Assumption**: OpenAI returns a single valid JSON object. The next node handles parse failures.
+- **Assumption**: OpenRouter returns a single valid JSON object. The next node handles parse failures.
 
 ### 6. Parse Structured Invoice
 
@@ -107,7 +107,7 @@ This workflow is named **AI Invoice Processing and Accounting Entry Automation**
 | Google Sheets | Google OAuth2 | Same credential is fine |
 | Gmail | Google OAuth2 | Requires Gmail send scope |
 | OCR.Space | None (header key) | Set `apikey` directly in the HTTP Request node |
-| OpenAI | None (header key) | Set `Authorization: Bearer ...` in the HTTP Request node |
+| OpenRouter | None (header key) | Set `Authorization: Bearer ...` in the HTTP Request node |
 
 ---
 
@@ -116,4 +116,4 @@ This workflow is named **AI Invoice Processing and Accounting Entry Automation**
 - Each node is named clearly: no default `HTTP Request 1` names.
 - The success path and exception path are visually separated vertically.
 - The sticky note at the top left lists the import checklist for quick setup.
-- Add brief inline notes in n8n (`Node Notes` field) where assumptions matter most: OCR Engine choice, OpenAI model, and sheet column order.
+- Add brief inline notes in n8n (`Node Notes` field) where assumptions matter most: OCR Engine choice, OpenRouter model, and sheet column order.

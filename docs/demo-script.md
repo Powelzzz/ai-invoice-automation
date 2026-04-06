@@ -26,7 +26,7 @@ Walk the panel through a complete invoice automation journey in five to seven mi
 
 Point to `docs/architecture.md` or draw attention to the n8n canvas.
 
-> "The flow is: invoice lands in Google Drive, n8n picks it up, OCR.Space reads the document, OpenAI structures the fields, we validate the result, log it in Google Sheets, and send a notification. Nine nodes, one clear path."
+> "The flow is: invoice lands in Google Drive, n8n picks it up, OCR.Space reads the document, OpenRouter structures the fields, we validate the result, log it in Google Sheets, and send a notification. Nine nodes, one clear path."
 
 ### Step 3 — Upload the invoice *(~30 seconds)*
 
@@ -44,9 +44,9 @@ Switch to n8n. Show the execution starting.
 
 Click into the `OCR.Space Extract` node output.
 
-> "OCR.Space reads the raw text from the PDF. That text is unstructured — column headers and line items are mixed together. That's where OpenAI comes in."
+> "OCR.Space reads the raw text from the PDF. That text is unstructured — column headers and line items are mixed together. That's where OpenRouter comes in."
 
-Click into the `OpenAI Extract Fields` node output. Show the JSON.
+Click into the `OpenRouter Extract Fields` node output. Show the JSON.
 
 > "I'm passing the OCR text to GPT-4.1 Mini with a constrained prompt. The prompt tells the model to return only a JSON object — no explanations, no guessing. If a field is missing, it returns null. Low temperature keeps the output stable."
 

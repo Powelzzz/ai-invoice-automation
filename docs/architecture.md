@@ -8,7 +8,7 @@ This project uses a simple event-driven workflow to process invoices from upload
 flowchart LR
     A[Google Drive Upload] --> B[n8n Trigger]
     B --> C[OCR.Space]
-    C --> D[OpenAI]
+    C --> D[OpenRouter]
     D --> E[Validation]
     E --> F[Google Sheets]
     F --> G[Gmail]
@@ -28,9 +28,9 @@ The process begins when a user uploads an invoice file to a designated Google Dr
 
 The uploaded file is sent to `OCR.Space` so the invoice text can be extracted from the PDF or image. This step turns the document into machine-readable content.
 
-### 4. OpenAI
+### 4. OpenRouter
 
-The extracted OCR text is passed to OpenAI with a structured prompt. The model returns normalized invoice fields such as vendor name, invoice number, dates, currency, and totals.
+The extracted OCR text is passed to OpenRouter with a structured prompt. The model returns normalized invoice fields such as vendor name, invoice number, dates, currency, and totals.
 
 ### 5. Validation
 

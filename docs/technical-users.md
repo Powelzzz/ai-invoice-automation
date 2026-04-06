@@ -7,7 +7,7 @@ Before building or reviewing the workflow, ensure the following are available:
 - An operational `n8n` instance
 - Access to Google Drive, Google Sheets, and Gmail under the same Google Workspace or Google account
 - An `OCR.Space` account with a valid API key
-- An OpenAI account with API access enabled
+- An OpenRouter account with API access enabled
 - A sample invoice file in PDF, PNG, or JPEG format
 - Permission to create and manage `n8n` credentials
 
@@ -16,7 +16,7 @@ Before building or reviewing the workflow, ensure the following are available:
 The workflow depends on these secrets:
 
 - `OCR_SPACE_API_KEY`
-- `OPENAI_API_KEY`
+- `OPENROUTER_API_KEY`
 
 Recommended environment variables are documented in [.env.example](/Users/lawrencepaulabayata/Projects/ai-invoice-automation/.env.example).
 
@@ -29,7 +29,7 @@ This guide assumes:
 - `n8n` is reachable through a stable local or hosted URL
 - Credential storage is enabled in `n8n`
 - HTTP Request nodes can call external APIs
-- The workflow runs with network access to Google APIs, `OCR.Space`, and OpenAI
+- The workflow runs with network access to Google APIs, `OCR.Space`, and OpenRouter
 - The invoice trigger uses a dedicated Google Drive folder rather than a shared uncontrolled directory
 - The workflow is designed for a demo or technical assessment, not a hardened production deployment
 
@@ -101,7 +101,7 @@ Recommended request considerations:
 
 - Use the correct file source from the Google Drive download node
 - Capture the raw OCR response body for debugging
-- Extract the primary parsed text before passing data to OpenAI
+- Extract the primary parsed text before passing data to OpenRouter
 
 Failure patterns to expect:
 
@@ -110,14 +110,14 @@ Failure patterns to expect:
 - Weak scan quality
 - Empty or fragmented OCR text
 
-## OpenAI Setup
+## OpenRouter Setup
 
-Configure OpenAI as the structured extraction layer after OCR.
+Configure OpenRouter as the structured extraction layer after OCR.
 
 Required setup:
 
-- Valid `OPENAI_API_KEY`
-- A chosen model, for example `gpt-4.1-mini`
+- Valid `OPENROUTER_API_KEY`
+- A chosen model, for example `openai/gpt-4.1-mini`
 - A constrained extraction prompt stored in [prompts/invoice_extraction_prompt.txt](/Users/lawrencepaulabayata/Projects/ai-invoice-automation/prompts/invoice_extraction_prompt.txt)
 
 Recommended configuration:
@@ -189,7 +189,7 @@ Raw OCR response.
 Output:
 Normalized `ocr_text` string for the AI extraction step.
 
-### 5. OpenAI Extraction
+### 5. OpenRouter Extraction
 
 Purpose:
 Transform OCR text into structured invoice JSON.
@@ -251,7 +251,7 @@ Suggested decision rules:
 - If `invoice_number` is missing, route to exception handling
 - If `total` is missing or non-numeric, route to exception handling
 - If OCR text is empty, stop early and notify failure
-- If OpenAI returns malformed JSON, retry once or route to manual review
+- If OpenRouter returns malformed JSON, retry once or route to manual review
 
 Recommended exception payload fields:
 
@@ -288,7 +288,7 @@ Check that:
 - The selected model is appropriate for structured extraction
 - Temperature is set low
 
-### OpenAI Returns Invalid JSON
+### OpenRouter Returns Invalid JSON
 
 Check that:
 

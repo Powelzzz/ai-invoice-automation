@@ -57,7 +57,7 @@ Reasons it stays efficient:
 
 - `n8n` reduces custom development overhead
 - OCR is only used when a new file arrives
-- OpenAI is only used after OCR, for structured extraction
+- OpenRouter is only used after OCR, for structured extraction
 - Google Sheets is sufficient for demo-scale tracking
 - Gmail handles notifications without extra infrastructure
 

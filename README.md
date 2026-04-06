@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project presents an interview-ready design for automating invoice intake, extraction, validation, accounting handoff, and stakeholder notification. The solution uses `n8n` as the orchestration layer and connects `Google Drive`, `OCR.Space`, `OpenAI`, `Google Sheets`, and `Gmail` into a practical finance operations workflow.
+This project presents an interview-ready design for automating invoice intake, extraction, validation, accounting handoff, and stakeholder notification. The solution uses `n8n` as the orchestration layer and connects `Google Drive`, `OCR.Space`, `OpenRouter`, `Google Sheets`, and `Gmail` into a practical finance operations workflow.
 
 The objective is to reduce manual invoice handling, improve data consistency, and create a simple but credible automation pattern that can be extended into a production-grade accounting process.
 
@@ -26,7 +26,7 @@ In many small and mid-sized operations, this work is still handled manually. Tha
 - `n8n`: workflow orchestration and integration logic
 - `Google Drive`: invoice intake and file storage trigger point
 - `OCR.Space`: OCR extraction for invoice PDFs and images
-- `OpenAI`: structured invoice field extraction and normalization
+- `OpenRouter`: structured invoice field extraction and normalization via AI
 - `Google Sheets`: lightweight invoice log and review surface
 - `Gmail`: stakeholder notifications for success and exception cases
 
@@ -37,7 +37,7 @@ The solution follows an event-driven pattern:
 1. A new invoice is uploaded to a designated Google Drive folder.
 2. `n8n` detects the new file and downloads it.
 3. `OCR.Space` extracts raw text from the invoice.
-4. `OpenAI` converts OCR text into structured invoice JSON.
+4. `OpenRouter` converts OCR text into structured invoice JSON.
 5. The workflow validates required fields and handles exceptions.
 6. `Google Sheets` records the processed invoice.
 7. `Gmail` sends a notification confirming success or flagging an issue.
@@ -56,7 +56,7 @@ The file content is passed to `OCR.Space` to retrieve machine-readable text.
 
 ### Structuring
 
-The OCR output is sent to `OpenAI` with a constrained extraction prompt that returns normalized invoice fields in JSON format.
+The OCR output is sent to `OpenRouter` with a constrained extraction prompt that returns normalized invoice fields in JSON format.
 
 ### Validation
 
@@ -77,7 +77,7 @@ Gmail sends a success or exception email so stakeholders know whether the invoic
 - Access to an `n8n` environment
 - A Google account with Drive, Sheets, and Gmail access
 - An `OCR.Space` API key
-- An OpenAI API key
+- An OpenRouter API key
 
 ### 2. Configure Environment Variables
 
@@ -85,8 +85,8 @@ Use [.env.example](/Users/lawrencepaulabayata/Projects/ai-invoice-automation/.en
 
 Required values include:
 
-- `OPENAI_API_KEY`
-- `OPENAI_MODEL`
+- `OPENROUTER_API_KEY`
+- `OPENROUTER_MODEL`
 - `OCR_SPACE_API_KEY`
 - `GOOGLE_DRIVE_FOLDER_ID`
 - `GOOGLE_SHEET_ID`
@@ -109,7 +109,7 @@ Suggested node order:
 2. Download File
 3. OCR.Space HTTP Request
 4. Normalize OCR Text
-5. OpenAI Extraction
+5. OpenRouter Extraction
 6. Validate JSON
 7. Append Row to Google Sheets
 8. Send Gmail Notification

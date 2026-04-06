@@ -17,7 +17,7 @@ Build an AI invoice processing automation for a technical assessment.
 - n8n for workflow automation
 - Google Drive for invoice intake
 - OCR.Space for OCR
-- OpenAI for invoice field extraction
+- OpenRouter for invoice field extraction
 - Google Sheets for record storage
 - Gmail for notifications
 
