@@ -149,7 +149,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer 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"
+              "value": "Bearer REPLACE_WITH_OPENROUTER_API_KEY"
             },
             {
               "name": "Content-Type",
