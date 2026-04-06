@@ -1,65 +1,61 @@
 {
-  "id": "ai-invoice-automation-001",
   "name": "AI Invoice Processing and Accounting Entry Automation",
   "nodes": [
     {
-      "id": "2b2e9fbb-1cf6-4662-9e42-c0aa03ef1a01",
+      "parameters": {
+        "content": "## Import Checklist\n\n1. Select your existing Google Drive, Google Sheets, and Gmail credentials on the Google nodes.\n2. Replace `YOUR_GOOGLE_DRIVE_FOLDER_ID` in the trigger.\n3. Replace `YOUR_GOOGLE_SHEET_ID` and `Sheet1` in both Google Sheets nodes.\n4. Replace OCR.Space and OpenAI placeholder headers in the two HTTP Request nodes.\n5. Update the Gmail `To` field if you want notifications sent to a different inbox.\n\nThis starter workflow is designed for a quick interview demo and includes a manual-review branch.",
+        "height": 260,
+        "width": 720,
+        "color": 5
+      },
+      "id": "57f325d1-43d7-4b30-90b3-038f6093825b",
       "name": "Setup Notes",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -1160,
-        -420
-      ],
-      "parameters": {
-        "color": 5,
-        "width": 720,
-        "height": 260,
-        "content": "## Import Checklist\n\n1. Select your existing Google Drive, Google Sheets, and Gmail credentials on the Google nodes.\n2. Replace `YOUR_GOOGLE_DRIVE_FOLDER_ID` in the trigger.\n3. Replace `YOUR_GOOGLE_SHEET_ID` and `Sheet1` in both Google Sheets nodes.\n4. Replace OCR.Space and OpenAI placeholder headers in the two HTTP Request nodes.\n5. Update the Gmail `To` field if you want notifications sent to a different inbox.\n\nThis starter workflow is designed for a quick interview demo and includes a manual-review branch."
-      }
+        304,
+        448
+      ]
     },
     {
-      "id": "5a98f733-e52b-4e84-82f2-fd4522d7af02",
-      "name": "Google Drive Trigger",
-      "type": "n8n-nodes-base.googleDriveTrigger",
-      "typeVersion": 1,
-      "position": [
-        -980,
-        60
-      ],
       "parameters": {
-        "authentication": "oAuth2",
-        "triggerOn": "specificFolder",
-        "folderToWatch": {
-          "__rl": true,
-          "mode": "id",
-          "value": "YOUR_GOOGLE_DRIVE_FOLDER_ID"
-        },
-        "event": "fileCreated",
-        "options": {
-          "fileType": "all"
-        },
         "pollTimes": {
           "item": [
             {
               "mode": "everyMinute"
             }
           ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1n5A8ciU-ORUIfzS0qxkLPNcf6OCtNqz5",
+          "mode": "list",
+          "cachedResultName": "Incoming Invoices",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1n5A8ciU-ORUIfzS0qxkLPNcf6OCtNqz5"
+        },
+        "event": "fileCreated",
+        "options": {
+          "fileType": "all"
+        }
+      },
+      "id": "63f6b219-9801-4bb9-912e-9a9ea947ec7b",
+      "name": "Google Drive Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        352,
+        864
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "fP4pBhR19nk58K1s",
+          "name": "Google Drive account"
         }
       }
     },
     {
-      "id": "58f4fffb-b917-4d1c-8476-ef0c9cdd9803",
-      "name": "Download Invoice",
-      "type": "n8n-nodes-base.googleDrive",
-      "typeVersion": 3,
-      "position": [
-        -760,
-        60
-      ],
       "parameters": {
-        "authentication": "oAuth2",
-        "resource": "file",
         "operation": "download",
         "fileId": {
           "__rl": true,
@@ -67,26 +63,32 @@
           "value": "={{ $json.id }}"
         },
         "options": {}
+      },
+      "id": "811da974-acdd-4e54-8fd9-edfd717d1a82",
+      "name": "Download Invoice",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        576,
+        864
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "fP4pBhR19nk58K1s",
+          "name": "Google Drive account"
+        }
       }
     },
     {
-      "id": "0608580d-fc20-4f2c-80e8-c4416f43b92c",
-      "name": "OCR.Space Extract",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        -540,
-        60
-      ],
       "parameters": {
-        "url": "https://api.ocr.space/parse/image",
         "method": "POST",
+        "url": "https://api.ocr.space/parse/image",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "apikey",
-              "value": "REPLACE_WITH_OCR_SPACE_API_KEY"
+              "value": "K83848383388957"
             }
           ]
         },
@@ -95,8 +97,8 @@
         "bodyParameters": {
           "parameters": [
             {
-              "name": "file",
               "parameterType": "formBinaryData",
+              "name": "file",
               "inputDataFieldName": "data"
             },
             {
@@ -114,88 +116,105 @@
           ]
         },
         "options": {}
-      }
-    },
-    {
-      "id": "8898ffcb-7ddc-4f21-bbb4-b46638833c5b",
-      "name": "Normalize OCR Text",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -320,
-        60
-      ],
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "language": "javaScript",
-        "jsCode": "const parsedText = ($json.ParsedResults?.[0]?.ParsedText || '').trim();\n\nlet trigger = {};\ntry {\n  trigger = $('Google Drive Trigger').first().json;\n} catch (e) {\n  trigger = $input.item.json || {};\n}\n\nreturn {\n  json: {\n    ocr_text: parsedText,\n    source_file_id: trigger.id || null,\n    source_file_name: trigger.name || null,\n    source_file_mime_type: trigger.mimeType || null,\n    source_file_created_time: trigger.createdTime || null,\n    source_file_link: trigger.webViewLink || null\n  }\n};"
-      }
-    },
-    {
-      "id": "5ef972a4-f5ab-4b79-a911-b24a1e8b3be9",
-      "name": "OpenAI Extract Fields",
+      },
+      "id": "e8b201bb-5fc9-47f0-9c8f-2550cf50c85c",
+      "name": "OCR.Space Extract1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        -100,
-        60
-      ],
+        800,
+        864
+      ]
+    },
+    {
       "parameters": {
-        "url": "https://api.openai.com/v1/chat/completions",
+        "mode": "runOnceForEachItem",
+        "jsCode": "const parsedText = ($json.ParsedResults?.[0]?.ParsedText || '').trim();\n\nlet trigger = {};\ntry {\n  trigger = $('Google Drive Trigger').first().json;\n} catch (e) {\n  trigger = $input.item.json || {};\n}\n\nreturn {\n  json: {\n    ocr_text: parsedText,\n    source_file_id: trigger.id || null,\n    source_file_name: trigger.name || null,\n    source_file_mime_type: trigger.mimeType || null,\n    source_file_created_time: trigger.createdTime || null,\n    source_file_link: trigger.webViewLink || null\n  }\n};"
+      },
+      "id": "bb9cb746-5e2f-4401-bfd2-2c9097ecb0c6",
+      "name": "Normalize OCR Text1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        864
+      ]
+    },
+    {
+      "parameters": {
         "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer REPLACE_WITH_OPENAI_API_KEY"
+              "value": "Bearer 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"
             },
             {
               "name": "Content-Type",
               "value": "application/json"
+            },
+            {
+              "name": "HTTP-Referer",
+              "value": "https://n8n.io"
+            },
+            {
+              "name": "X-Title",
+              "value": "AI Invoice Automation"
             }
           ]
         },
         "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"gpt-4.1-mini\",\n  \"response_format\": { \"type\": \"json_object\" },\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an AI assistant specialized in extracting structured financial data from invoice text. Return only a valid JSON object.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"You are an AI assistant specialized in extracting structured financial data from invoice text.\\n\\nYour task is to analyze the invoice content provided and return ONLY a valid JSON object following the exact format below.\\n\\nSTRICT RULES:\\n- Do NOT include any explanations, comments, markdown, or extra text.\\n- Output ONLY a valid JSON object.\\n- Do NOT guess or hallucinate missing values. If a value is not clearly present, return null.\\n- Ensure all extracted values come directly from the invoice text.\\n- All numeric values must be numbers only (no currency symbols, commas, or text).\\n- Dates must be formatted as YYYY-MM-DD if possible; otherwise return null.\\n- Currency must be a 3-letter code if identifiable (e.g., PHP, USD); otherwise return null.\\n- Ensure consistency: subtotal + tax ≈ total_amount when applicable.\\n- If multiple totals are present, choose the FINAL payable amount.\\n\\nFIELDS TO EXTRACT:\\n- vendor_name\\n- invoice_number\\n- invoice_date\\n- due_date\\n- currency\\n- subtotal\\n- tax\\n- total_amount\\n- suggested_category (choose ONLY one: Office Supplies, Utilities, Inventory Purchase, Freight, Repairs, Marketing, Other)\\n- confidence_notes\\n\\nOUTPUT FORMAT:\\n{\\n  \\\"vendor_name\\\": \\\"\\\",\\n  \\\"invoice_number\\\": \\\"\\\",\\n  \\\"invoice_date\\\": \\\"\\\",\\n  \\\"due_date\\\": \\\"\\\",\\n  \\\"currency\\\": \\\"\\\",\\n  \\\"subtotal\\\": null,\\n  \\\"tax\\\": null,\\n  \\\"total_amount\\\": null,\\n  \\\"suggested_category\\\": \\\"\\\",\\n  \\\"confidence_notes\\\": \\\"\\\"\\n}\\n\\nInvoice Text:\\n\\\"\\\"\\\"\\n{{$json.ocr_text}}\\n\\\"\\\"\\\"\"\n    }\n  ]\n}",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "openrouter/auto"
+            },
+            {
+              "name": "temperature",
+              "value": "={{0}}"
+            },
+            {
+              "name": "messages",
+              "value": "={{[\n  {\n    role: \"system\",\n    content: \"You extract structured invoice data from OCR text for many different invoice formats. Return ONLY raw valid JSON. Do not include markdown, do not include code fences, and do not include explanations.\\n\\nExtract these fields:\\n- vendor_name\\n- invoice_number\\n- invoice_date\\n- due_date\\n- currency\\n- subtotal\\n- tax\\n- total_amount\\n- suggested_category\\n- confidence_notes\\n\\nRules:\\n1. vendor_name = the issuing company or supplier name.\\n2. invoice_number = prefer labels exactly matching 'Invoice Number', 'Invoice No', 'Invoice #', or similar. If not present, fall back to 'Document Number', 'Reference Number', or similar.\\n3. invoice_date = prefer labels exactly matching 'Invoice Date'. If not present, fall back to 'Document Date', 'Issue Date', or similar.\\n4. due_date = prefer labels such as 'Due Date', 'Due on', 'Due', 'Payment Due', 'Pay Before'. If not explicitly present, infer from terms such as 'Net 7', 'Net 15', 'Net 30', 'Net 45', or similar using invoice_date.\\n5. currency = extract the invoice currency code or symbol context if possible, such as USD, PHP, EUR, SGD.\\n6. subtotal = prefer values labeled 'Subtotal', 'Total excluding Tax', 'Total before Tax', or similar.\\n7. tax = prefer values labeled 'Tax', 'VAT', 'GST', 'Sales Tax', 'Tax Amount', or similar.\\n8. total_amount = prefer the final payable amount. Prioritize labels such as 'Total (including Tax)', 'Grand Total', 'Amount Due', 'Balance Due', 'Total Due', 'Total Amount', or the final total with currency. Do NOT use subtotal, excluding-tax total, line-item total, charges, or credits unless they are clearly the final payable amount.\\n9. suggested_category must be one of: Office Supplies, Utilities, Inventory Purchase, Freight, Repairs, Marketing, Other.\\n10. confidence_notes should briefly mention any ambiguity, fallback, or inference.\\n11. If a field is missing, return null.\\n12. Return dates exactly as written unless they can be safely normalized to YYYY-MM-DD.\\n13. For invoices with both document fields and invoice fields, prefer invoice-specific labels over document-specific labels.\\n14. For statements or billing summaries, still extract the best matching invoice-like fields.\\n\\nReturn exactly this JSON shape:\\n{\\n  \\\"vendor_name\\\": null,\\n  \\\"invoice_number\\\": null,\\n  \\\"invoice_date\\\": null,\\n  \\\"due_date\\\": null,\\n  \\\"currency\\\": null,\\n  \\\"subtotal\\\": null,\\n  \\\"tax\\\": null,\\n  \\\"total_amount\\\": null,\\n  \\\"suggested_category\\\": null,\\n  \\\"confidence_notes\\\": null\\n}\"\n  },\n  {\n    role: \"user\",\n    content: $json.ocr_text\n  }\n]}}"
+            }
+          ]
+        },
         "options": {}
-      }
+      },
+      "id": "d4cd0a82-1aa5-4a61-8213-46d30b7c2ec2",
+      "name": "OpenAI Extract Fields1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1232,
+        864
+      ]
     },
     {
-      "id": "1d5c74ff-b4d3-4bc0-9c4f-47dd1338d321",
-      "name": "Parse Structured Invoice",
+      "parameters": {
+        "jsCode": "const raw = $json.choices?.[0]?.message?.content || '';\n\nconst rawContent = raw\n  .replace(/```json/gi, '')\n  .replace(/```/g, '')\n  .trim();\n\nlet parsed = {};\nlet parseError = null;\n\nif (rawContent) {\n  try {\n    parsed = JSON.parse(rawContent);\n  } catch (error) {\n    parseError = `Invalid JSON from AI: ${error.message}`;\n  }\n} else {\n  parseError = 'Empty AI response';\n}\n\nlet normalizeData = {};\ntry {\n  normalizeData = $('Normalize OCR Text1').first().json || {};\n} catch (e) {\n  try {\n    normalizeData = $('Normalize OCR Text').first().json || {};\n  } catch {\n    normalizeData = {};\n  }\n}\n\nconst ocrText = String(normalizeData.ocr_text || '');\n\nfunction cleanText(value) {\n  if (value === null || value === undefined) return null;\n  const v = String(value).trim();\n  return v === '' ? null : v;\n}\n\nfunction toNumber(value) {\n  if (value === null || value === undefined || value === '') return null;\n  const cleaned = String(value).replace(/[^0-9.-]/g, '');\n  const num = Number(cleaned);\n  return Number.isNaN(num) ? null : num;\n}\n\nfunction pickFirst(...values) {\n  for (const value of values) {\n    const cleaned = cleanText(value);\n    if (cleaned) return cleaned;\n  }\n  return null;\n}\n\nfunction extractByRegex(text, regex) {\n  const match = text.match(regex);\n  return match?.[1] ? match[1].trim() : null;\n}\n\nfunction normalizeDate(value) {\n  if (!value) return null;\n  const v = String(value).trim();\n\n  // keep original if already ISO\n  if (/^\\d{4}-\\d{2}-\\d{2}$/.test(v)) return v;\n\n  // dd/mm/yyyy or mm/dd/yyyy style\n  const slashMatch = v.match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/);\n  if (slashMatch) {\n    // assume OCR invoice format as written, keep exact text\n    return v;\n  }\n\n  const d = new Date(v);\n  if (!Number.isNaN(d.getTime())) {\n    return d.toISOString().split('T')[0];\n  }\n\n  return v;\n}\n\nfunction inferDueDate(rawText, invoiceDate, currentDueDate) {\n  if (currentDueDate) return currentDueDate;\n  if (!invoiceDate) return null;\n\n  const netMatch = String(rawText || '').match(/net\\s*(\\d{1,3})/i);\n  if (!netMatch) return null;\n\n  const days = Number(netMatch[1]);\n  if (Number.isNaN(days)) return null;\n\n  // try parsing known formats\n  let base = null;\n\n  if (/^\\d{2}\\/\\d{2}\\/\\d{4}$/.test(invoiceDate)) {\n    const [a, b, y] = invoiceDate.split('/').map(Number);\n    // assume mm/dd/yyyy for billing docs like your Microsoft sample\n    base = new Date(y, a - 1, b);\n  } else {\n    base = new Date(invoiceDate);\n  }\n\n  if (!base || Number.isNaN(base.getTime())) return null;\n\n  base.setDate(base.getDate() + days);\n  return base.toISOString().split('T')[0];\n}\n\n// ---------- OCR fallbacks ----------\nconst fallbackVendor =\n  extractByRegex(ocrText, /^([^\\n]+?(?:Ltd|LLC|Inc|Corporation|Corp|Pte Ltd|Limited))/im) ||\n  extractByRegex(ocrText, /^([^\\n]+?Regional Sales[^\\n]*)/im);\n\nconst fallbackInvoiceNumber =\n  extractByRegex(ocrText, /Invoice\\s*Number[:\\s]+([A-Z0-9-]+)/i) ||\n  extractByRegex(ocrText, /Invoice\\s*No\\.?[:\\s]+([A-Z0-9-]+)/i) ||\n  extractByRegex(ocrText, /Document\\s*Number[:\\s]+([A-Z0-9-]+)/i);\n\nconst fallbackInvoiceDate =\n  extractByRegex(ocrText, /Invoice\\s*Date[:\\s]+([0-9\\/-]+)/i) ||\n  extractByRegex(ocrText, /Document\\s*Date[:\\s]+([0-9\\/-]+)/i);\n\nconst fallbackDueDate =\n  extractByRegex(ocrText, /Due\\s*Date[:\\s]+([0-9\\/-]+)/i) ||\n  extractByRegex(ocrText, /Due\\s*on[:\\s]+([0-9\\/-]+)/i) ||\n  extractByRegex(ocrText, /Payment\\s*Due[:\\s]+([0-9\\/-]+)/i) ||\n  extractByRegex(ocrText, /\\bDue[:\\s]+([0-9\\/-]+)/i);\n\nconst fallbackCurrency =\n  extractByRegex(ocrText, /Total(?:\\s*\\(including Tax\\))?\\s+(USD|PHP|EUR|SGD|GBP|AUD|JPY|CAD)\\s+[0-9.,-]+/i) ||\n  extractByRegex(ocrText, /Total\\s+(USD|PHP|EUR|SGD|GBP|AUD|JPY|CAD)\\s+[0-9.,-]+/i);\n\nconst fallbackSubtotal =\n  extractByRegex(ocrText, /Subtotal[:\\s]+([0-9.,-]+)/i) ||\n  extractByRegex(ocrText, /Total\\s*\\(excluding Tax\\)[:\\s]+([0-9.,-]+)/i);\n\nconst fallbackTax =\n  extractByRegex(ocrText, /Tax(?:\\s*Amount)?[:\\s]+([0-9.,-]+)/i) ||\n  extractByRegex(ocrText, /VAT(?:\\s*[0-9.%]+)?[:\\s]+([0-9.,-]+)/i);\n\nconst fallbackTotal =\n  extractByRegex(ocrText, /Total\\s*\\(including Tax\\)\\s+(?:USD|PHP|EUR|SGD|GBP|AUD|JPY|CAD)?\\s*([0-9.,-]+)/i) ||\n  extractByRegex(ocrText, /Total\\s+(?:USD|PHP|EUR|SGD|GBP|AUD|JPY|CAD)\\s+([0-9.,-]+)/i) ||\n  extractByRegex(ocrText, /Amount\\s*Due[:\\s]+(?:USD|PHP|EUR|SGD|GBP|AUD|JPY|CAD)?\\s*([0-9.,-]+)/i) ||\n  extractByRegex(ocrText, /Total\\s*Amount[:\\s]+(?:USD|PHP|EUR|SGD|GBP|AUD|JPY|CAD)?\\s*([0-9.,-]+)/i);\n\n// ---------- final values ----------\nconst vendorName = pickFirst(parsed.vendor_name, fallbackVendor);\nconst invoiceNumber = pickFirst(parsed.invoice_number, fallbackInvoiceNumber);\nconst invoiceDate = normalizeDate(pickFirst(parsed.invoice_date, fallbackInvoiceDate));\nconst dueDate = normalizeDate(\n  inferDueDate(\n    ocrText,\n    invoiceDate,\n    pickFirst(parsed.due_date, fallbackDueDate)\n  )\n);\nconst currency = pickFirst(parsed.currency, fallbackCurrency);\nconst subtotal = toNumber(pickFirst(parsed.subtotal, fallbackSubtotal));\nconst tax = toNumber(pickFirst(parsed.tax, fallbackTax));\nconst totalAmount = toNumber(pickFirst(parsed.total_amount, fallbackTotal));\nconst suggestedCategory = pickFirst(parsed.suggested_category, 'Other');\nconst confidenceNotes = cleanText(parsed.confidence_notes);\n\n// ---------- validation ----------\nconst criticalErrors = [];\nconst warnings = [];\n\nif (parseError) warnings.push(parseError);\n\n// required critical fields\nif (!vendorName) criticalErrors.push('Missing vendor_name');\nif (!invoiceNumber) criticalErrors.push('Missing invoice_number');\nif (totalAmount === null || Number.isNaN(totalAmount) || totalAmount <= 0) {\n  criticalErrors.push('Invalid total_amount');\n}\n\n// date warnings, not critical\nif (!invoiceDate) warnings.push('Missing invoice_date');\nif (!dueDate) warnings.push('Missing due_date');\n\n// date consistency warning\nif (invoiceDate && dueDate) {\n  let inv = null;\n  let due = null;\n\n  if (/^\\d{2}\\/\\d{2}\\/\\d{4}$/.test(invoiceDate)) {\n    const [m, d, y] = invoiceDate.split('/').map(Number);\n    inv = new Date(y, m - 1, d);\n  } else {\n    inv = new Date(invoiceDate);\n  }\n\n  if (/^\\d{2}\\/\\d{2}\\/\\d{4}$/.test(dueDate)) {\n    const [m, d, y] = dueDate.split('/').map(Number);\n    due = new Date(y, m - 1, d);\n  } else {\n    due = new Date(dueDate);\n  }\n\n  if (!Number.isNaN(inv?.getTime()) && !Number.isNaN(due?.getTime()) && due < inv) {\n    warnings.push('due_date is earlier than invoice_date');\n  }\n}\n\n// numeric consistency warning\nif (subtotal !== null && tax !== null && totalAmount !== null) {\n  const expected = subtotal + tax;\n  const diff = Math.abs(expected - totalAmount);\n  if (diff > 0.05) {\n    warnings.push(`Total mismatch: subtotal + tax = ${expected.toFixed(2)}, total_amount = ${totalAmount.toFixed(2)}`);\n  }\n}\n\n// OCR quality warning\nif (ocrText.length < 50) {\n  warnings.push('OCR text too short');\n}\n\n// confidence warning\nconst confidenceText = String(confidenceNotes || '').toLowerCase();\nconst lowConfidence = /uncertain|low confidence|missing|unclear|not found/.test(confidenceText);\nif (lowConfidence) {\n  warnings.push('Low confidence indicated by confidence_notes');\n}\n\n// success/fail rule\nconst isValid = criticalErrors.length === 0;\n\nconst output = {\n  source_file_name: normalizeData.source_file_name || null,\n  source_file_link: normalizeData.source_file_link || null,\n  source_file_created_time: normalizeData.source_file_created_time || null,\n  ocr_text: ocrText || null,\n  openai_raw_content: rawContent,\n  vendor_name: vendorName,\n  invoice_number: invoiceNumber,\n  invoice_date: invoiceDate,\n  due_date: dueDate,\n  currency: currency,\n  subtotal: subtotal,\n  tax: tax,\n  total_amount: totalAmount,\n  suggested_category: suggestedCategory,\n  confidence_notes: confidenceNotes,\n  status: isValid ? 'Ready for review' : 'Manual Review',\n  review_needed: isValid ? 'No' : 'Yes',\n  validation_errors: [...criticalErrors, ...warnings].join('; '),\n  is_valid: isValid,\n  upload_timestamp: new Date().toISOString()\n};\n\nreturn [{ json: output }];"
+      },
+      "id": "e597f725-af93-4bdc-8691-5da0edb16ea8",
+      "name": "Parse Structured Invoice1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        140,
-        60
-      ],
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "language": "javaScript",
-        "jsCode": "const rawContent = $json.choices?.[0]?.message?.content || '';\nlet parsed = {};\nlet parseError = null;\n\ntry {\n  parsed = JSON.parse(rawContent);\n} catch (error) {\n  parseError = `Invalid JSON from OpenAI: ${error.message}`;\n}\n\nconst missingFields = [];\nif (!parsed.vendor_name) missingFields.push('vendor_name');\nif (!parsed.invoice_number) missingFields.push('invoice_number');\n\nconst normalizedTotal = parsed.total_amount === null || parsed.total_amount === undefined || parsed.total_amount === ''\n  ? null\n  : Number(parsed.total_amount);\n\nif (normalizedTotal === null || Number.isNaN(normalizedTotal)) {\n  missingFields.push('total_amount');\n}\n\nconst confidenceText = String(parsed.confidence_notes || '').toLowerCase();\nconst lowConfidence = /uncertain|low confidence|missing|unclear|not found/.test(confidenceText);\nconst validationErrors = [];\nif (parseError) validationErrors.push(parseError);\nfor (const field of missingFields) validationErrors.push(`Missing required field: ${field}`);\nif (lowConfidence) validationErrors.push('Low confidence indicated by confidence_notes');\n\nlet normalizeData = {};\ntry {\n  normalizeData = $('Normalize OCR Text').first().json;\n} catch (e) {\n  normalizeData = {};\n}\n\nreturn {\n  json: {\n    source_file_name: normalizeData.source_file_name || null,\n    source_file_link: normalizeData.source_file_link || null,\n    source_file_created_time: normalizeData.source_file_created_time || null,\n    ocr_text: normalizeData.ocr_text || null,\n    openai_raw_content: rawContent,\n    vendor_name: parsed.vendor_name || null,\n    invoice_number: parsed.invoice_number || null,\n    invoice_date: parsed.invoice_date || null,\n    due_date: parsed.due_date || null,\n    currency: parsed.currency || null,\n    subtotal: parsed.subtotal === null || parsed.subtotal === undefined || parsed.subtotal === '' ? null : Number(parsed.subtotal),\n    tax: parsed.tax === null || parsed.tax === undefined || parsed.tax === '' ? null : Number(parsed.tax),\n    total_amount: normalizedTotal,\n    suggested_category: parsed.suggested_category || null,\n    confidence_notes: parsed.confidence_notes || null,\n    status: validationErrors.length === 0 ? 'Ready for review' : 'Manual Review',\n    review_needed: validationErrors.length === 0 ? 'No' : 'Yes',\n    validation_errors: validationErrors.join('; '),\n    is_valid: validationErrors.length === 0,\n    upload_timestamp: new Date().toISOString()\n  }\n};"
-      }
+        1472,
+        864
+      ]
     },
     {
-      "id": "af98ce7d-d0f8-4a0c-99a0-ef6e4fb02d64",
-      "name": "Validation",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        380,
-        60
-      ],
       "parameters": {
-        "options": {},
         "conditions": {
           "options": {
-            "version": 2,
-            "leftValue": "",
             "caseSensitive": true,
-            "typeValidation": "strict"
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
           },
-          "combinator": "and",
           "conditions": [
             {
               "id": "20c6ea8b-67a0-4d2f-8adb-8477a2e2f801",
@@ -207,417 +226,449 @@
               "leftValue": "={{ $json.is_valid }}",
               "rightValue": ""
             }
-          ]
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c470ef6e-cfce-4e5e-b4f3-0efce9b8c200",
+      "name": "Validation1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1712,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1OnFAVJ62-QRP3Pn6rs18s4MuNJYvAiaaBZITJwsqvUY/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1OnFAVJ62-QRP3Pn6rs18s4MuNJYvAiaaBZITJwsqvUY/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Upload Timestamp": "={{$json[\"upload_timestamp\"]}}",
+            "File Name": "={{$json[\"source_file_name\"]}}",
+            "Vendor": "={{$json[\"vendor_name\"]}}",
+            "Invoice Number": "={{$json[\"invoice_number\"]}}",
+            "Invoice Date": "={{$json[\"invoice_date\"]}}",
+            "Due Date": "={{$json[\"invoice_date\"]}}",
+            "Currency": "={{$json[\"due_date\"]}}",
+            "Subtotal": "={{$json[\"subtotal\"]}}",
+            "Tax": "={{$json[\"tax\"]}}",
+            "Total Amount": "={{$json[\"total_amount\"]}}",
+            "Suggested Category": "={{$json[\"suggested_category\"]}}",
+            "Status": "={{$json[\"suggested_category\"]}}",
+            "Review Needed": "={{$json[\"status\"]}}",
+            "Source File Link": "={{$json[\"review_needed\"]}}",
+            "Confidence Notes": "={{$json[\"review_needed\"]}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Upload Timestamp",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Upload Timestamp",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "File Name",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "File Name",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Vendor",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Vendor",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Invoice Number",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Invoice Number",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Invoice Date",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Invoice Date",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Due Date",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Due Date",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Currency",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Currency",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subtotal",
+              "type": "number",
+              "display": true,
+              "required": false,
+              "displayName": "Subtotal",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tax",
+              "type": "number",
+              "display": true,
+              "required": false,
+              "displayName": "Tax",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total Amount",
+              "type": "number",
+              "display": true,
+              "required": false,
+              "displayName": "Total Amount",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Suggested Category",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Suggested Category",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Status",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Review Needed",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Review Needed",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Source File Link",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Source File Link",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Confidence Notes",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Confidence Notes",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "84cac7c1-6108-4e98-aad9-0eb1930a35cb",
+      "name": "Append Success Row1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1984,
+        752
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "o04k5Y1Rc63OG06F",
+          "name": "Google Sheets account"
         }
       }
     },
     {
-      "id": "56b4162b-c22d-4e73-b16d-02a22121eb4a",
-      "name": "Append Success Row",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.7,
+      "parameters": {
+        "sendTo": "royalpowel@gmail.com",
+        "subject": "={{`Invoice ${$node[\"Parse Structured Invoice1\"].json[\"invoice_number\"] || \"Unknown\"} processed successfully`}}",
+        "message": "={{`\n<div style=\"font-family: Arial, sans-serif; background:#f6f8fb; padding:24px; color:#1f2937;\">\n  <div style=\"max-width:700px; margin:0 auto; background:#ffffff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden;\">\n    \n    <div style=\"background:#16a34a; color:#ffffff; padding:18px 24px;\">\n      <h2 style=\"margin:0; font-size:20px;\">Invoice Processed Successfully</h2>\n      <p style=\"margin:6px 0 0; font-size:13px; opacity:0.95;\">\n        Your AI invoice automation workflow completed successfully.\n      </p>\n    </div>\n\n    <div style=\"padding:24px;\">\n      <table style=\"width:100%; border-collapse:collapse; font-size:14px;\">\n        <tr>\n          <td style=\"padding:10px 0; font-weight:bold; width:180px;\">Vendor</td>\n          <td style=\"padding:10px 0;\">${$node[\"Parse Structured Invoice1\"].json[\"vendor_name\"] || \"Unknown Vendor\"}</td>\n        </tr>\n        <tr>\n          <td style=\"padding:10px 0; font-weight:bold;\">Invoice Number</td>\n          <td style=\"padding:10px 0;\">${$node[\"Parse Structured Invoice1\"].json[\"invoice_number\"] || \"Unknown\"}</td>\n        </tr>\n        <tr>\n          <td style=\"padding:10px 0; font-weight:bold;\">Invoice Date</td>\n          <td style=\"padding:10px 0;\">${$node[\"Parse Structured Invoice1\"].json[\"invoice_date\"] || \"N/A\"}</td>\n        </tr>\n        <tr>\n          <td style=\"padding:10px 0; font-weight:bold;\">Due Date</td>\n          <td style=\"padding:10px 0;\">${$node[\"Parse Structured Invoice1\"].json[\"due_date\"] || \"N/A\"}</td>\n        </tr>\n        <tr>\n          <td style=\"padding:10px 0; font-weight:bold;\">Currency</td>\n          <td style=\"padding:10px 0;\">${$node[\"Parse Structured Invoice1\"].json[\"currency\"] || \"N/A\"}</td>\n        </tr>\n        <tr>\n          <td style=\"padding:10px 0; font-weight:bold;\">Total Amount</td>\n          <td style=\"padding:10px 0;\">${$node[\"Parse Structured Invoice1\"].json[\"total_amount\"] ?? \"Unknown\"}</td>\n        </tr>\n        <tr>\n          <td style=\"padding:10px 0; font-weight:bold;\">Suggested Category</td>\n          <td style=\"padding:10px 0;\">${$node[\"Parse Structured Invoice1\"].json[\"suggested_category\"] || \"Other\"}</td>\n        </tr>\n        <tr>\n          <td style=\"padding:10px 0; font-weight:bold;\">Status</td>\n          <td style=\"padding:10px 0;\">\n            <span style=\"display:inline-block; background:#dcfce7; color:#166534; padding:4px 10px; border-radius:999px; font-weight:bold;\">\n              ${$node[\"Parse Structured Invoice1\"].json[\"status\"] || \"Unknown\"}\n            </span>\n          </td>\n        </tr>\n        <tr>\n          <td style=\"padding:10px 0; font-weight:bold;\">Review Needed</td>\n          <td style=\"padding:10px 0;\">${$node[\"Parse Structured Invoice1\"].json[\"review_needed\"] || \"Unknown\"}</td>\n        </tr>\n        <tr>\n          <td style=\"padding:10px 0; font-weight:bold;\">Source File</td>\n          <td style=\"padding:10px 0;\">${$node[\"Parse Structured Invoice1\"].json[\"source_file_name\"] || \"Unknown file\"}</td>\n        </tr>\n      </table>\n\n      <div style=\"margin-top:24px; padding:16px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px;\">\n        <div style=\"font-weight:bold; margin-bottom:8px;\">Validation Notes</div>\n        <div style=\"font-size:13px; color:#4b5563;\">\n          ${$node[\"Parse Structured Invoice1\"].json[\"validation_errors\"] || \"No validation issues detected.\"}\n        </div>\n      </div>\n    </div>\n\n    <div style=\"padding:16px 24px; background:#f9fafb; border-top:1px solid #e5e7eb; font-size:12px; color:#6b7280;\">\n      Generated automatically by your AI Invoice Processing Automation workflow.\n    </div>\n  </div>\n</div>\n`}}",
+        "options": {}
+      },
+      "id": "59a4e86f-fd83-49d1-bbb9-7b1187724fd2",
+      "name": "Send Success Email1",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
       "position": [
-        640,
-        -40
+        2240,
+        752
       ],
+      "webhookId": "aaafd11a-9ebf-4176-b442-a4700d3d6cea",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4qoPXauG1wtRHuw0",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
       "parameters": {
         "operation": "append",
         "documentId": {
           "__rl": true,
-          "mode": "id",
-          "value": "YOUR_GOOGLE_SHEET_ID"
+          "value": "https://docs.google.com/spreadsheets/d/1OnFAVJ62-QRP3Pn6rs18s4MuNJYvAiaaBZITJwsqvUY/edit?gid=0#gid=0",
+          "mode": "url"
         },
         "sheetName": {
           "__rl": true,
-          "mode": "name",
-          "value": "Sheet1"
+          "value": "https://docs.google.com/spreadsheets/d/1OnFAVJ62-QRP3Pn6rs18s4MuNJYvAiaaBZITJwsqvUY/edit?gid=0#gid=0",
+          "mode": "url"
         },
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "Upload Timestamp": "={{ $json.upload_timestamp }}",
-            "File Name": "={{ $json.source_file_name }}",
-            "Vendor": "={{ $json.vendor_name }}",
-            "Invoice Number": "={{ $json.invoice_number }}",
-            "Invoice Date": "={{ $json.invoice_date }}",
-            "Due Date": "={{ $json.due_date }}",
-            "Currency": "={{ $json.currency }}",
-            "Subtotal": "={{ $json.subtotal }}",
-            "Tax": "={{ $json.tax }}",
-            "Total Amount": "={{ $json.total_amount }}",
-            "Suggested Category": "={{ $json.suggested_category }}",
-            "Status": "={{ $json.status }}",
-            "Review Needed": "={{ $json.review_needed }}",
-            "Source File Link": "={{ $json.source_file_link }}",
-            "Confidence Notes": "={{ $json.confidence_notes }}"
+            "Upload Timestamp": "={{$json[\"source_file_created_time\"]}}",
+            "File Name": "={{$json[\"source_file_name\"]}}",
+            "Vendor": "={{$json[\"vendor_name\"]}}",
+            "Invoice Number": "={{$json[\"invoice_number\"]}}",
+            "Invoice Date": "={{$json[\"invoice_date\"]}}",
+            "Total Amount": "={{$json[\"total_amount\"]}}",
+            "Due Date": "={{$json[\"due_date\"]}}",
+            "Currency": "={{$json[\"currency\"]}}",
+            "Subtotal": "={{$json[\"subtotal\"]}}",
+            "Tax": "={{$json[\"subtotal\"]}}",
+            "Suggested Category": "={{$json[\"tax\"]}}",
+            "Status": "={{$json[\"status\"]}}",
+            "Review Needed": "={{$json[\"review_needed\"]}}",
+            "Source File Link": "={{$json[\"source_file_link\"]}}",
+            "Confidence Notes": "={{$json[\"source_file_link\"]}}"
           },
+          "matchingColumns": [],
           "schema": [
             {
               "id": "Upload Timestamp",
-              "type": "string",
-              "display": true,
-              "required": false,
               "displayName": "Upload Timestamp",
+              "required": false,
               "defaultMatch": false,
+              "display": true,
+              "type": "string",
               "canBeUsedToMatch": true
             },
             {
               "id": "File Name",
-              "type": "string",
-              "display": true,
-              "required": false,
               "displayName": "File Name",
+              "required": false,
               "defaultMatch": false,
+              "display": true,
+              "type": "string",
               "canBeUsedToMatch": true
             },
             {
               "id": "Vendor",
-              "type": "string",
-              "display": true,
-              "required": false,
               "displayName": "Vendor",
+              "required": false,
               "defaultMatch": false,
+              "display": true,
+              "type": "string",
               "canBeUsedToMatch": true
             },
             {
               "id": "Invoice Number",
-              "type": "string",
-              "display": true,
-              "required": false,
               "displayName": "Invoice Number",
+              "required": false,
               "defaultMatch": false,
+              "display": true,
+              "type": "string",
               "canBeUsedToMatch": true
             },
             {
               "id": "Invoice Date",
-              "type": "string",
-              "display": true,
-              "required": false,
               "displayName": "Invoice Date",
+              "required": false,
               "defaultMatch": false,
+              "display": true,
+              "type": "string",
               "canBeUsedToMatch": true
             },
             {
               "id": "Due Date",
-              "type": "string",
-              "display": true,
-              "required": false,
               "displayName": "Due Date",
+              "required": false,
               "defaultMatch": false,
+              "display": true,
+              "type": "string",
               "canBeUsedToMatch": true
             },
             {
               "id": "Currency",
-              "type": "string",
-              "display": true,
-              "required": false,
               "displayName": "Currency",
+              "required": false,
               "defaultMatch": false,
+              "display": true,
+              "type": "string",
               "canBeUsedToMatch": true
             },
             {
               "id": "Subtotal",
-              "type": "number",
-              "display": true,
-              "required": false,
               "displayName": "Subtotal",
+              "required": false,
               "defaultMatch": false,
+              "display": true,
+              "type": "string",
               "canBeUsedToMatch": true
             },
             {
               "id": "Tax",
-              "type": "number",
-              "display": true,
-              "required": false,
               "displayName": "Tax",
+              "required": false,
               "defaultMatch": false,
+              "display": true,
+              "type": "string",
               "canBeUsedToMatch": true
             },
             {
               "id": "Total Amount",
-              "type": "number",
-              "display": true,
-              "required": false,
               "displayName": "Total Amount",
+              "required": false,
               "defaultMatch": false,
+              "display": true,
+              "type": "string",
               "canBeUsedToMatch": true
             },
             {
               "id": "Suggested Category",
-              "type": "string",
-              "display": true,
-              "required": false,
               "displayName": "Suggested Category",
+              "required": false,
               "defaultMatch": false,
+              "display": true,
+              "type": "string",
               "canBeUsedToMatch": true
             },
             {
               "id": "Status",
-              "type": "string",
-              "display": true,
-              "required": false,
               "displayName": "Status",
+              "required": false,
               "defaultMatch": false,
+              "display": true,
+              "type": "string",
               "canBeUsedToMatch": true
             },
             {
               "id": "Review Needed",
-              "type": "string",
-              "display": true,
-              "required": false,
               "displayName": "Review Needed",
+              "required": false,
               "defaultMatch": false,
+              "display": true,
+              "type": "string",
               "canBeUsedToMatch": true
             },
             {
               "id": "Source File Link",
-              "type": "string",
-              "display": true,
-              "required": false,
               "displayName": "Source File Link",
+              "required": false,
               "defaultMatch": false,
+              "display": true,
+              "type": "string",
               "canBeUsedToMatch": true
             },
             {
               "id": "Confidence Notes",
-              "type": "string",
-              "display": true,
-              "required": false,
               "displayName": "Confidence Notes",
+              "required": false,
               "defaultMatch": false,
+              "display": true,
+              "type": "string",
               "canBeUsedToMatch": true
             }
           ],
-          "matchingColumns": [],
           "attemptToConvertTypes": false,
           "convertFieldsToString": false
         },
         "options": {}
-      }
-    },
-    {
-      "id": "5e9bb91e-c2d6-4726-b1ab-ed84fbaedc32",
-      "name": "Send Success Email",
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.2,
-      "position": [
-        900,
-        -40
-      ],
-      "parameters": {
-        "authentication": "oAuth2",
-        "resource": "message",
-        "operation": "send",
-        "sendTo": "your_email@example.com",
-        "subject": "=New invoice processed: {{ $json.invoice_number || 'Unknown Invoice' }}",
-        "emailType": "text",
-        "message": "=New invoice processed\\n\\nVendor: {{ $json.vendor_name || 'Unknown Vendor' }}\\nInvoice #: {{ $json.invoice_number || 'Unknown' }}\\nTotal: {{ $json.total_amount || 'Unknown' }} {{ $json.currency || '' }}\\nStatus: {{ $json.status }}\\nFile: {{ $json.source_file_name || 'Unknown file' }}"
-      }
-    },
-    {
-      "id": "bfb86231-38ff-41ee-b8c0-c2d80cc57a0d",
-      "name": "Append Manual Review Row",
+      },
+      "id": "918437bb-8762-432e-96c4-42e7f890d7fc",
+      "name": "Append Manual Review Row1",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        640,
-        180
+        1984,
+        976
       ],
-      "parameters": {
-        "operation": "append",
-        "documentId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "YOUR_GOOGLE_SHEET_ID"
-        },
-        "sheetName": {
-          "__rl": true,
-          "mode": "name",
-          "value": "Sheet1"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "Upload Timestamp": "={{ $json.upload_timestamp }}",
-            "File Name": "={{ $json.source_file_name }}",
-            "Vendor": "={{ $json.vendor_name }}",
-            "Invoice Number": "={{ $json.invoice_number }}",
-            "Invoice Date": "={{ $json.invoice_date }}",
-            "Due Date": "={{ $json.due_date }}",
-            "Currency": "={{ $json.currency }}",
-            "Subtotal": "={{ $json.subtotal }}",
-            "Tax": "={{ $json.tax }}",
-            "Total Amount": "={{ $json.total_amount }}",
-            "Suggested Category": "={{ $json.suggested_category }}",
-            "Status": "Manual Review",
-            "Review Needed": "Yes",
-            "Source File Link": "={{ $json.source_file_link }}",
-            "Confidence Notes": "={{ $json.validation_errors || $json.confidence_notes }}"
-          },
-          "schema": [
-            {
-              "id": "Upload Timestamp",
-              "type": "string",
-              "display": true,
-              "required": false,
-              "displayName": "Upload Timestamp",
-              "defaultMatch": false,
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "File Name",
-              "type": "string",
-              "display": true,
-              "required": false,
-              "displayName": "File Name",
-              "defaultMatch": false,
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Vendor",
-              "type": "string",
-              "display": true,
-              "required": false,
-              "displayName": "Vendor",
-              "defaultMatch": false,
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Invoice Number",
-              "type": "string",
-              "display": true,
-              "required": false,
-              "displayName": "Invoice Number",
-              "defaultMatch": false,
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Invoice Date",
-              "type": "string",
-              "display": true,
-              "required": false,
-              "displayName": "Invoice Date",
-              "defaultMatch": false,
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Due Date",
-              "type": "string",
-              "display": true,
-              "required": false,
-              "displayName": "Due Date",
-              "defaultMatch": false,
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Currency",
-              "type": "string",
-              "display": true,
-              "required": false,
-              "displayName": "Currency",
-              "defaultMatch": false,
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Subtotal",
-              "type": "number",
-              "display": true,
-              "required": false,
-              "displayName": "Subtotal",
-              "defaultMatch": false,
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Tax",
-              "type": "number",
-              "display": true,
-              "required": false,
-              "displayName": "Tax",
-              "defaultMatch": false,
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Total Amount",
-              "type": "number",
-              "display": true,
-              "required": false,
-              "displayName": "Total Amount",
-              "defaultMatch": false,
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Suggested Category",
-              "type": "string",
-              "display": true,
-              "required": false,
-              "displayName": "Suggested Category",
-              "defaultMatch": false,
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Status",
-              "type": "string",
-              "display": true,
-              "required": false,
-              "displayName": "Status",
-              "defaultMatch": false,
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Review Needed",
-              "type": "string",
-              "display": true,
-              "required": false,
-              "displayName": "Review Needed",
-              "defaultMatch": false,
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Source File Link",
-              "type": "string",
-              "display": true,
-              "required": false,
-              "displayName": "Source File Link",
-              "defaultMatch": false,
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Confidence Notes",
-              "type": "string",
-              "display": true,
-              "required": false,
-              "displayName": "Confidence Notes",
-              "defaultMatch": false,
-              "canBeUsedToMatch": true
-            }
-          ],
-          "matchingColumns": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        },
-        "options": {}
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "o04k5Y1Rc63OG06F",
+          "name": "Google Sheets account"
+        }
       }
     },
     {
-      "id": "0ee7781f-eec5-4551-8231-c7f959db2819",
-      "name": "Send Manual Review Email",
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.2,
-      "position": [
-        900,
-        180
-      ],
       "parameters": {
-        "authentication": "oAuth2",
-        "resource": "message",
-        "operation": "send",
-        "sendTo": "your_email@example.com",
+        "sendTo": "royalpowel@gmail.com",
         "subject": "=Manual review required: {{ $json.source_file_name || 'Invoice file' }}",
         "emailType": "text",
-        "message": "=Invoice needs manual review\\n\\nFile: {{ $json.source_file_name || 'Unknown file' }}\\nVendor: {{ $json.vendor_name || 'Unknown Vendor' }}\\nInvoice #: {{ $json.invoice_number || 'Unknown' }}\\nReason: {{ $json.validation_errors || $json.confidence_notes || 'Validation failed' }}\\nSource File Link: {{ $json.source_file_link || 'Not available' }}"
+        "message": "=Invoice needs manual review\\n\\nFile: {{ $json.source_file_name || 'Unknown file' }}\\nVendor: {{ $json.vendor_name || 'Unknown Vendor' }}\\nInvoice #: {{ $json.invoice_number || 'Unknown' }}\\nReason: {{ $json.validation_errors || $json.confidence_notes || 'Validation failed' }}\\nSource File Link: {{ $json.source_file_link || 'Not available' }}",
+        "options": {}
+      },
+      "id": "200472c7-d490-4725-8a77-30d162b6e9c6",
+      "name": "Send Manual Review Email1",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2240,
+        976
+      ],
+      "webhookId": "7f85207e-5912-43d6-9c21-31aaae091c60",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4qoPXauG1wtRHuw0",
+          "name": "Gmail account"
+        }
       }
     }
   ],
+  "pinData": {},
   "connections": {
     "Google Drive Trigger": {
       "main": [
@@ -634,91 +685,91 @@
       "main": [
         [
           {
-            "node": "OCR.Space Extract",
+            "node": "OCR.Space Extract1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "OCR.Space Extract": {
+    "OCR.Space Extract1": {
       "main": [
         [
           {
-            "node": "Normalize OCR Text",
+            "node": "Normalize OCR Text1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Normalize OCR Text": {
+    "Normalize OCR Text1": {
       "main": [
         [
           {
-            "node": "OpenAI Extract Fields",
+            "node": "OpenAI Extract Fields1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "OpenAI Extract Fields": {
+    "OpenAI Extract Fields1": {
       "main": [
         [
           {
-            "node": "Parse Structured Invoice",
+            "node": "Parse Structured Invoice1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Parse Structured Invoice": {
+    "Parse Structured Invoice1": {
       "main": [
         [
           {
-            "node": "Validation",
+            "node": "Validation1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Validation": {
+    "Validation1": {
       "main": [
         [
           {
-            "node": "Append Success Row",
+            "node": "Append Success Row1",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Append Manual Review Row",
+            "node": "Append Manual Review Row1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Append Success Row": {
+    "Append Success Row1": {
       "main": [
         [
           {
-            "node": "Send Success Email",
+            "node": "Send Success Email1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Append Manual Review Row": {
+    "Append Manual Review Row1": {
       "main": [
         [
           {
-            "node": "Send Manual Review Email",
+            "node": "Send Manual Review Email1",
             "type": "main",
             "index": 0
           }
@@ -726,10 +777,17 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
   },
-  "pinData": {},
-  "versionId": "66cb6a04-39e4-4b46-a655-7ddc5ee9da17"
+  "versionId": "89be1572-2185-44b1-aa2e-86dcbd07cd36",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0cb1a306f78f40e4872ecdf0ecc91f07136864eca63272e3541aec37bc2879ab"
+  },
+  "id": "CWCIce094OP8QXhA",
+  "tags": []
 }
