@@ -117,7 +117,7 @@ Configure OpenRouter as the structured extraction layer after OCR.
 Required setup:
 
 - Valid `OPENROUTER_API_KEY`
-- A chosen model, for example `openai/gpt-4.1-mini`
+- A chosen model — the workflow uses `openrouter/auto` (automatic model selection)
 - A constrained extraction prompt stored in [prompts/invoice_extraction_prompt.txt](/Users/lawrencepaulabayata/Projects/ai-invoice-automation/prompts/invoice_extraction_prompt.txt)
 
 Recommended configuration:

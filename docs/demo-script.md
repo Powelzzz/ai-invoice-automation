@@ -48,7 +48,7 @@ Click into the `OCR.Space Extract` node output.
 
 Click into the `OpenRouter Extract Fields` node output. Show the JSON.
 
-> "I'm passing the OCR text to GPT-4.1 Mini with a constrained prompt. The prompt tells the model to return only a JSON object — no explanations, no guessing. If a field is missing, it returns null. Low temperature keeps the output stable."
+> "I'm passing the OCR text to OpenRouter — which routes to the best available model — with a constrained prompt. The prompt tells the model to return only a JSON object — no explanations, no guessing. If a field is missing, it returns null. Temperature zero keeps the output stable."
 
 Click into the `Parse Structured Invoice` node.
 

@@ -44,12 +44,12 @@ This workflow is named **AI Invoice Processing and Accounting Entry Automation**
 ### 5. OpenRouter Extract Fields
 
 - Type: HTTP Request (POST)
-- Endpoint: `https://api.openrouter.com/v1/chat/completions`
-- Model: `openai/gpt-4.1-mini` (balance of cost and quality; swap to `openai/gpt-4o` for higher accuracy)
-- `response_format`: `{ "type": "json_object" }` forces JSON-only output
-- Temperature: default (0.0 is ideal for structured extraction; set via model config if needed)
-- Prompt: inlined from `prompts/invoice_extraction_prompt.txt`
-- **Assumption**: OpenRouter returns a single valid JSON object. The next node handles parse failures.
+- Endpoint: `https://openrouter.ai/api/v1/chat/completions`
+- Model: `openrouter/auto` (OpenRouter selects the best available model; swap to `openai/gpt-4o` for consistent behavior)
+- `response_format`: not set — markdown stripping is handled in the Parse node
+- Temperature: `0` (set explicitly for stable extraction)
+- Prompt: inlined in the node messages body
+- **Assumption**: OpenRouter returns a single JSON object. The next node strips any markdown fences and handles parse failures.
 
 ### 6. Parse Structured Invoice
 
